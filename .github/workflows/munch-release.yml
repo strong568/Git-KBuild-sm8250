@@ -281,7 +281,7 @@ jobs:
           path: |
             munch-effcpu-gpustk-dtb
 
-    package_anykernel:
+  package_anykernel:
     needs: build
     strategy:
       matrix:
@@ -353,7 +353,6 @@ jobs:
 
           echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
           
-          # Nén trực tiếp từ bên trong thư mục
           cd AnyKernel3
           zip -r9 "../${ZIP_NAME}" .
           cd ..
