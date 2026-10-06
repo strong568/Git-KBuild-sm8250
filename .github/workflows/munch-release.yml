@@ -69,9 +69,6 @@ on:
         description: '[Extra] Enable bypass charging'
         required: true
         type: boolean
-        options:
-          - true
-          - false
         default: false
 
 jobs:
