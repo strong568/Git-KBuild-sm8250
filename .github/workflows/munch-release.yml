@@ -1,8 +1,5 @@
 name: FD-release-munch-builder
 
-permissions:
-  contents: write
-
 on:
   pull_request:
   workflow_dispatch:
@@ -73,11 +70,6 @@ on:
         required: true
         type: boolean
         default: false
-      ENABLE_RELEASE:
-        description: 'Upload build to GitHub Releases'
-        required: true
-        type: boolean
-        default: true
 
 jobs:
   build:
@@ -90,7 +82,7 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: sudo apt install -y flex libncurses6
+        run: sudo apt install flex libncurses6
 
       - name: Download & Extract Clang
         run: |
@@ -182,6 +174,7 @@ jobs:
           
           chmod +x ./scripts/config
 
+          # Function to toggle configs and echo the status
           toggle_config() {
             local feature=$1
             local state=$2
@@ -289,9 +282,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Zip Utility
-        run: sudo apt install -y zip
-
       - name: Download Kernel Build Image
         uses: actions/download-artifact@v4
         with:
@@ -323,19 +313,17 @@ jobs:
           path: kernel-part-4-addon
 
       - name: Clone AnyKernel3
-        run: git clone --recursive --depth=1 ${{ github.event.inputs.ANYKERNEL_URL }} -b munch AnyKernel3
+        run: git clone --recursive --depth=1 ${{ github.event.inputs.ANYKERNEL_URL }} -b munch AnyKernel3-${{ matrix.kernel }}
 
       - name: Move Kernel Files to AnyKernel3
         run: |
-          mv kernel-${{ matrix.kernel }}-base/* AnyKernel3/
-          mv kernel-part-1-addon/* AnyKernel3/
-          mv kernel-part-2-addon/* AnyKernel3/
-          mv kernel-part-3-addon/* AnyKernel3/
-          mv kernel-part-4-addon/* AnyKernel3/
-          rm -rf AnyKernel3/.git AnyKernel3/.github
+          mv kernel-${{ matrix.kernel }}-base/* AnyKernel3-${{ matrix.kernel }}/
+          mv kernel-part-1-addon/* AnyKernel3-${{ matrix.kernel }}/
+          mv kernel-part-2-addon/* AnyKernel3-${{ matrix.kernel }}/
+          mv kernel-part-3-addon/* AnyKernel3-${{ matrix.kernel }}/
+          mv kernel-part-4-addon/* AnyKernel3-${{ matrix.kernel }}/
 
-      - name: Package AnyKernel Zip
-        id: pack
+      - name: Define ZIP Name
         run: |
           COMPILED_DATE=$(date +%Y%m%d)
           EXTRA2=""
@@ -344,55 +332,18 @@ jobs:
           elif [[ "${{ github.event.inputs.VARIANT }}" == "oplus-variant" ]]; then
             EXTRA2="-OPLUS"
           fi
-          
           if [[ "${{ matrix.kernel }}" == "1" ]]; then
-            ZIP_NAME="[FD-][ksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
+            echo "ZIP_NAME=[FD-][ksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}]" >> $GITHUB_ENV
           else
-            ZIP_NAME="[FD-][noksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
+            echo "ZIP_NAME=[FD-][noksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}]" >> $GITHUB_ENV
           fi
-
-          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
-          
-          cd AnyKernel3
-          zip -r9 "../${ZIP_NAME}" .
-          cd ..
-          ls -la "${ZIP_NAME}"
-
-      - name: Upload Flashable Kernel Zip Artifact
+      
+      - name: Upload Flashable Kernel Zip
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ZIP_NAME }}
-          path: ${{ env.ZIP_NAME }}
-
-  release:
-    needs: package_anykernel
-    runs-on: ubuntu-latest
-    if: github.event.inputs.ENABLE_RELEASE == 'true'
-    steps:
-      - name: Download All Packaged ZIPs
-        uses: actions/download-artifact@v4
-        with:
-          pattern: "[FD-]*"
-          merge-multiple: true
-          path: release_files
-
-      - name: Verify Files Before Release
-        run: |
-          ls -la release_files/
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "release-${{ github.run_id }}"
-          name: "Kernel Munch Release - ${{ github.run_number }}"
-          body: |
-            ### Build Information
-            - **Device**: ${{ github.event.inputs.CODENAME }}
-            - **Compiler**: ${{ github.event.inputs.COMPILER }}
-            - **Variant**: ${{ github.event.inputs.VARIANT }}
-            - **Commit**: ${{ github.sha }}
-          draft: false
-          prerelease: false
-          files: release_files/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: |
+            AnyKernel3-${{ matrix.kernel }}/
+            !AnyKernel3-${{ matrix.kernel }}/.git
+            !AnyKernel3-${{ matrix.kernel }}/.github
+      
