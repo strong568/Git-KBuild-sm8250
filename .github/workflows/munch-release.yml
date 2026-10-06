@@ -67,7 +67,7 @@ on:
         default: false
       ENABLE_BYPASS_CHARGING:
         description: '[Extra] Enable bypass charging'
-        required: false
+        required: true
         type: boolean
         options:
           - true
