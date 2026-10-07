@@ -383,7 +383,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "release-${{ github.run_id }}"
-          name: "Kernel Munch Release - ${{ github.run_number }}"
+          name: "Kernel Munch Release - ${COMPILED_DATE} - ${{ github.run_number }}"
           body: |
             ### Build Information
             - **Device**: ${{ github.event.inputs.CODENAME }}
