@@ -339,10 +339,10 @@ jobs:
           fi
           
           if [[ "${{ matrix.kernel }}" == "1" ]]; then
-            ZIP_NAME="[FD-][ksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
+            ZIP_NAME="[FD-strong568-][ksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
             ARTIFACT_TAG="ksu-kernel"
           else
-            ZIP_NAME="[FD-][noksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
+            ZIP_NAME="[FD-strong568-][noksu-${{ github.event.inputs.CODENAME }}-${COMPILED_DATE}${EXTRA2}].zip"
             ARTIFACT_TAG="noksu-kernel"
           fi
 
