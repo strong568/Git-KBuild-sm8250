@@ -25,7 +25,7 @@ on:
         required: false
       CUSTOM_SED:
         description: 'Custom Kernel Version'
-        default: '-FakeDreamer'
+        default: '-FakeDreamer-strong568-'
         required: false
       COMPILER:
         description: 'Choose compiler'
