@@ -219,7 +219,7 @@ jobs:
           export PATH="$(pwd)/clang/bin:$PATH"
           export ARCH=arm64
           export SUBARCH=ARM64
-          export KBUILD_BUILD_USER="renoroi"
+          export KBUILD_BUILD_USER="strong568"
           export KBUILD_BUILD_HOST="dreamstate"
           export KBUILD_BUILD_TIMESTAMP="$(TZ=UTC-7 date)"
           cd kernel_tree
